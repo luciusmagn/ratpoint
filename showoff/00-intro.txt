@@ -8,6 +8,6 @@
       '----------------------------------------------------------------'
 
 
-                    Lazaros Koromilas <lostd@2f30.org>
+                    \fB\fILazaros Koromilas <lostd@2f30.org>\fR
 
                         http://www.2f30.org/~lostd

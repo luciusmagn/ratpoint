@@ -12,15 +12,33 @@ trait Interpret {
 
 impl Interpret for String {
     fn interpret(&self, window: &mut EasyCurses) {
+        let mut chars = self.chars();
         window.clear();
-        window.print(self);
+
+        while let Some(next) = chars.next() {
+            match next {
+                '\\' => match chars.next() {
+                    Some('\\') => { window.print("\\"); },
+                    Some('f') => match chars.next() {
+                        Some('U') | Some('I') => { window.set_underline(true); },
+                        Some('u') | Some('i') => { window.set_underline(false); },
+                        Some('B') => { window.set_bold(true); },
+                        Some('b') => { window.set_bold(false); },
+                        Some('R') => { window.set_bold(false); window.set_underline(false); }
+                        _ => (),
+                    }
+                    _ => (),
+                },
+                x => { window.print(x.to_string()); },
+            };
+        }
     }
 }
 
 fn main() {
     let files: Vec<String> = args()
         .skip(1)
-        .map(|x| File::open(&x).expect(&format!("couldn't open file {:?}", x)))
+        .map(|x| File::open(&x).expect(&format!("couldn't open file {}", x)))
         .map(|mut x| {let mut buf = String::new(); x.read_to_string(&mut buf).expect("couldn't read file"); buf})
         .collect()
     ;
