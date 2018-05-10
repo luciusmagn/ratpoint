@@ -1,0 +1,8 @@
+
+  Exporting
+  =========
+
+  o  Easily create a basic Black on White PDF export like that:
+
+         $ enscript *.txt -Brf "Courier16" -p - > slides.ps
+         $ ps2pdf slides.ps

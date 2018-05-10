@@ -1,0 +1,12 @@
+
+  Configure the environment
+  =========================
+
+  o  You can alter your xterm defaults by adding the
+     following lines to your ~/.Xdefaults:
+
+         XTerm*background: white
+         XTerm*foreground: black
+         XTerm*faceName: xft:Monospace:size=16
+
+  o  Open an xterm and maximize its window

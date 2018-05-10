@@ -1,0 +1,9 @@
+
+  Run the presentation
+  ====================
+
+  o  Go to the directory where the files live
+
+  o  Run catpoint with the list of files as arguments
+
+         $ catpoint *.txt

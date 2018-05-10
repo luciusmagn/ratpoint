@@ -1,0 +1,18 @@
+
+  Create the slides
+  =================
+
+  o  Create a text file for every slide
+
+         00-intro.txt
+         01-files.txt
+         02-config.txt
+         03-run.txt
+         04-graph.txt
+         99-end.txt
+
+  o  You can use banner or figlet to generate text art
+
+  o  You can use gnuplot to produce graphs using
+
+         set term dumb

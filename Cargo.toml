@@ -1,0 +1,7 @@
+[package]
+name = "ratpoint"
+version = "0.1.0"
+authors = ["Lukáš Hozda <luk.hozda@gmail.com>"]
+
+[dependencies]
+easycurses = "0.10.0"
