@@ -4,7 +4,7 @@
 
   o  Create a text file for every slide
 
-         00-intro.txt
+         \cr00-intro.txt\cW
          01-files.txt
          02-config.txt
          03-run.txt

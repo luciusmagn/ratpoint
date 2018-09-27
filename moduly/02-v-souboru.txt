@@ -1,0 +1,22 @@
+
+  \fB\fUModuly v jednom souboru\fR
+
+  \fBo  Když chceme definovat modul uvnitř souboru,
+     následuje za klíčovým slovem \fU\cmmod\cW\fR\fB blok kódu\fR
+
+  \crmod\cW potato {
+  	\ccfn \cymoje_funkce\cW() {
+  		\cgprintln!\cW(\cy"hello!"\cW);
+  	}
+  	\cgpub\cc fn \cytaky_funkce\cW() {
+  		\cgprintln!\cW(\cy"????????"\cW);
+  	}
+  }
+  \ccfn \cybezimportu\cW() {
+  	potato::\cymoje_funkce\cW(); \cb// není public, chyba\cW
+  	potato::\cytaky_funkce\cW(); \cb// ????????\cW
+  }
+  \ccfn \cysimportem\cW() {
+  	\cruse\cW potato::\cytaky_funkce\cW;
+  	\cytaky_funkce\cW(); \cb// ????????\cW
+  }

@@ -1,0 +1,18 @@
+
+  \fB\fUModuly ve více souborech\fR
+
+  \fBo Soubor je automaticky modulem o jeho názvu,
+     nepoužívá se klíčové slovo\fR
+
+  \cb// knihovna.rs
+  \cgpub \ccfn \cyfaktorial\cW(x:\cm i16)\cW -> \cmi64\cW {
+  	(1..x+1).\cyfold\cW(1 \cgas\cm i64\cW, |acc, x| acc * x)
+  }
+
+  \cb// main.rs
+  \crmod\cW knihovna; \cb// vloží soubor\cW
+  \cruse\cW knihovna::\cyfaktorial\cW;
+
+  \ccfn \cymain()\cW {
+  	\cyprintln!\cW(\cy"{}"\cW, \cyfaktorial\cW(10)); \cb// 3628800\cW
+  }

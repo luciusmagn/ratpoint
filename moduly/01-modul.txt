@@ -1,0 +1,19 @@
+
+  \fB\fUModuly\fR
+
+\*Modul je oddělená jednotka programu,
+podobně jako soubor v C/C++ nebo namespace v C#
+ \*podbod
+ \-spolubod
+  \* víc podbod
+
+\*Slouží k členění kódu, jak logicky, tak do souborů
+
+\*V Rustu může být modulem soubor, celá složka, nebo také
+může být definováno víc modulů v jednom souboru
+
+\*Pro importování symbolů (funkce, konstanty, typy atd.)
+se používá klíčové slovo \fU\fB\cmuse\fR\cW
+
+\*Symboly v modulech nejsou všechny vyditelné,
+to co má být exportováno se označuje modifikátorem \fU\fB\cgpub\fR\cW

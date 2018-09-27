@@ -1,0 +1,14 @@
+
+  \fB\fUModuly ve standardní knihovně\fR
+
+  | \fBNázev\fR       |                          \fBPopis\fR                                 |
+  | -----------------------------------------------------------------------------|
+  | collections | sbírky (HashMap, HashSet, BTreeMap)                            |
+  | env         | informace o prostředí (pracovní adresář, argumenty z cli, atd) |
+  | fs          | práce se soubory (tvoření, mazání, čtení), spolu s io          |
+  | io          | čtení a zápis (obecné funkce, traity), standardní vstup,výstup |
+  | mem         | funkce pro manuální ovládání paměti                            |
+  | net         | práce se sítí, sockety a IP adresy                             |
+  | path        | manipulování cest/paths                                        |
+  | process     | práce s procesy (exit, spouštení jiných programů)              |
+  | thread      | vlákna, multithreading                                         |
