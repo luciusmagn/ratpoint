@@ -109,19 +109,112 @@ impl Rust for str {
 
 	fn is_yellow(&self) -> bool {
 		match self {
-			x if x.starts_with("\"") && x.ends_with("") => true,
+			x if x.starts_with("\"") && x.ends_with("\"") => true,
+			x if x.starts_with("'") && x.ends_with("'") => true,
 			x if x.starts_with("::") => true,
 			_ => false,
 		}
 	}
 }
 
-fn tokenize(s: &str) -> Vec<&str> {
-	unimplemented!()
+fn tokenize(s: &str) -> Vec<String> {
+	let mut v = Vec::new();
+	let mut current: String = String::new();
+	let mut chars = s.chars().peekable();
+
+	while let Some(next) = chars.next() {
+		match next {
+			c if c.is_whitespace() => { v.push(current.clone()); current.clear(); v.push(c.to_string()) },
+			c @ '{' | c @ '}' | c @ '(' | c @ ')' | c @ ';' | c @ '<' | c @ '>' | c @ '[' | c @ ']' |
+			c @ '&' | c @ '@' | c @ ',' | c @ '=' | c @ '+' | c @ '-' | c @ '*' | c @ '|' => {
+				v.push(current.clone());
+				v.push(c.to_string());
+				current.clear();
+			},
+			'"' => {
+				current.push('"');
+
+				while let Some(next) = chars.next() {
+					current.push(next);
+					if next == '"' {
+						break;
+					}
+				}
+
+				v.push(current.clone());
+				current.clear();
+			},
+			'\'' => {
+				current.push('\'');
+
+				while let Some(next) = chars.next() {
+					current.push(next);
+					if next == '\'' {
+						break;
+					}
+				}
+
+				v.push(current.clone());
+				current.clear();
+			},
+			'/' => match chars.peek() {
+				Some(&'/') => {
+					current.push('/');
+
+					while let Some(next) = chars.next() {
+						current.push(next);
+						if chars.peek() == Some(&'\n') {
+							break;
+						}
+					}
+
+					v.push(current.clone());
+					current.clear();
+				},
+				Some(&'*') => {
+					current.push('/');
+					let mut level = 1;
+
+					while let Some(next) = chars.next() {
+						current.push(next);
+
+						match (next, chars.peek()) {
+							('/', Some(&'*')) => level += 1,
+							('*', Some(&'/')) => level -= 1,
+							_ => (),
+						}
+
+						if level == 0 {
+							break;
+						}
+					}
+
+					v.push(current.clone());
+					current.clear();
+				},
+				_ => {
+					v.push(current.clone());
+					v.push('/'.to_string());
+					current.clear();
+				}
+			},
+			':' => match chars.peek() {
+				Some(&':') => {
+					v.push(current.clone());
+					current.clear();
+					current.push(':');
+				},
+				_ => current.push(':'),
+			},
+			c => current.push(c),
+		}
+	}
+	v.retain(|x| x != "");
+	v
 }
 
 fn color(s: &str) -> String {
-	tokenize(s).into_iter().fold(String::new(), |mut acc, x| {
+	tokenize(s).iter().fold(String::new(), |mut acc, x| {
 		match x {
 			x if x.is_red()     => acc.push_str(&"\\cr".chars().chain(x.chars()).chain("\\cW".chars()).collect::<String>()),
 			x if x.is_green()   => acc.push_str(&"\\cg".chars().chain(x.chars()).chain("\\cW".chars()).collect::<String>()),
@@ -140,6 +233,9 @@ impl Interpret for String {
 		let mut chars = self.chars();
 		let mut indent = 0;
 		window.clear();
+		window.set_bold(false);
+		window.set_underline(false);
+		window.set_color_pair(colorpair!(White on Black));
 
 		while let Some(next) = chars.next() {
 			match next {
@@ -181,7 +277,8 @@ impl Interpret for String {
 							_ => window.print(&format!("\r{}  ‣  ", " ".repeat(indent - 5))),
 						};
 					},
-					_ => (),
+					Some(x) => { window.print("\\"); window.print(x.to_string()); },
+					None => { window.print("\\"); },
 				},
 				'\n' => match chars.next() {
 					Some('\n') => {
@@ -205,8 +302,8 @@ impl Interpret for String {
 	}
 
 	fn compile_rust(&self) -> String {
-		let chars = self.chars().collect::<Vec<char>>();
-		let mut windows = chars.windows(3);
+		let chars = self.chars().chain("   ".chars()).collect::<Vec<char>>();
+		let mut windows = chars.windows(3).peekable();
 		let mut new_string = String::new();
 		let mut temp = String::new();
 
@@ -219,22 +316,20 @@ impl Interpret for String {
 
 					while let Some(view) = windows.next() {
 						match view {
-							&['.', 'r', 's'] => {
-
-								break;
-							},
+							&['.', 'r', 's'] => break,
 							&[a, _,  _ ] => temp.push(a),
-							&[a, b] => temp.push_str(&format!("{}{}", a, b)),
-							&[a] => temp.push(a),
-							&[] => break,
 							_ => unreachable!(),
 						}
 					}
 
 					new_string.push_str(&color(&temp));
 					temp.clear();
+					windows.next();
+					windows.next();
+
+					eprintln!("{:#?}", windows.peek());
 				}
-				x => new_string.push(x[0]),
+				x => { new_string.push(x[0]) },
 			}
 		}
 
@@ -262,7 +357,7 @@ fn main() {
 		window.clear();
 		window.refresh();
 
-		files[i].interpret(&mut window);
+		files[i].compile_rust().interpret(&mut window);
 		while let Some(input) = window.get_input() {
 			use Input::*;
 
@@ -270,9 +365,9 @@ fn main() {
 				// exiting
 				Unknown(27) | Character('q') | KeyF5 => return,
 				// first
-				Character('u') | KeyBeg | KeyHome => files[{i = 0; i}].interpret(&mut window),
+				Character('u') | KeyBeg | KeyHome => files[{i = 0; i}].compile_rust().interpret(&mut window),
 				// last
-				Character('i') | KeyEnd => files[{i = files.len() - 1; i}].interpret(&mut window),
+				Character('i') | KeyEnd => files[{i = files.len() - 1; i}].compile_rust().interpret(&mut window),
 				// next
 				Character('j')
 				| Character('l')
@@ -280,7 +375,7 @@ fn main() {
 				| Character('C')
 				| KeyRight
 				| KeyDown
-				| KeyNPage => files[if i < files.len() - 1 { i += 1; i } else { i }].interpret(&mut window),
+				| KeyNPage => files[if i < files.len() - 1 { i += 1; i } else { i }].compile_rust().interpret(&mut window),
 				// previous
 				Character('h')
 				| Character('k')
@@ -288,7 +383,7 @@ fn main() {
 				| Character('D')
 				| KeyLeft
 				| KeyUp
-				| KeyPPage => files[if i != 0 { i -= 1; i } else { i }].interpret(&mut window),
+				| KeyPPage => files[if i != 0 { i -= 1; i } else { i }].compile_rust().interpret(&mut window),
 				_ => (),
 			}
 		}
