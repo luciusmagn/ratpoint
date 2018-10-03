@@ -230,7 +230,7 @@ fn color(s: &str) -> String {
 
 impl Interpret for String {
 	fn interpret(&self, window: &mut EasyCurses) {
-		let mut chars = self.chars();
+		let mut chars = self.chars().peekable();
 		let mut indent = 0;
 		window.clear();
 		window.set_bold(false);
@@ -274,27 +274,38 @@ impl Interpret for String {
 							5 => window.print("\r  o  "),
 							10 => window.print("\r        •  "),
 							15 => window.print("\r             >  "),
-							_ => window.print(&format!("\r{}  ‣  ", " ".repeat(indent - 5))),
+							_ => window.print(format!("\r{}  ‣  ", " ".repeat(indent - 5))),
 						};
 					},
 					Some(x) => { window.print("\\"); window.print(x.to_string()); },
 					None => { window.print("\\"); },
 				},
-				'\n' => match chars.next() {
-					Some('\n') => {
+				'\n' => match chars.peek() {
+					Some(&'\n') => {
+						chars.next();
 						if indent != 0 {
 							indent = 0;
 						}
 						window.print("\n\n");
 					},
-					Some(x) => {
+					Some(&x) => {
 						window.print("\n");
 						window.print(" ".repeat(indent));
-						window.print(x.to_string());
 					},
 					None => {
 						window.print("\n");
 					},
+				},
+				'.' => match (chars.next(), chars.peek()) {
+					(Some('H'), Some(&'E')) => {
+						chars.next();
+						let heading = chars.clone().take_while(|x| *x != '\n').collect::<String>();
+						(0..heading.len()).for_each(|_| { chars.next(); });
+
+						format!("\n  \\fB\\fU{}\\fR\n", heading.trim_left()).interpret(window);
+					},
+					(Some(x), _) => { window.print(&format!(".{}", x)); },
+					(None, _)    => { window.print("."); },
 				}
 				x => { window.print(x.to_string()); },
 			};
@@ -338,12 +349,36 @@ impl Interpret for String {
 }
 
 fn main() {
+	let mut to_pdf = false;
 	let files: Vec<String> = args()
 		.skip(1)
+		.filter(|x| if x == "-pdf" { to_pdf = true; false } else { true })
 		.map(|x| File::open(&x).expect(&format!("couldn't open file {}", x)))
 		.map(|mut x| {let mut buf = String::new(); x.read_to_string(&mut buf).expect("couldn't read file"); buf})
 		.collect()
 	;
+
+	if to_pdf {
+		println!("\
+			\n.nr fp 9\
+			\n.ll 6.3i\
+			\n.fo ``- % -``\
+
+			\n.de HE\
+			\n.(c\
+			\n.ps 18\
+			\n.ft B\
+			\n\\\\$1\
+			\n.ft\
+			\n.)c\
+			\n.ps\
+			\n..\
+
+			\n.2c\
+		");
+
+		return;
+	}
 
 	if args().count() != 1 {
 		let mut i = 0;
