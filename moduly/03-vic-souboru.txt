@@ -1,21 +1,19 @@
-
-  \fB\fUModuly ve více souborech\fR
-
+.HE Moduly ve více souborech
 \*Soubor je automaticky modulem o jeho názvu,
 nepoužívá se klíčové slovo\fR
 
 .rs
-  // knihovna
-  pub fn faktorial(x: i16) -> i64 {
-  	(1..x+1).fold(1 as i64, |acc, x| acc * x)
-  }
+	// knihovna
+	pub fn faktorial(x: i16) -> i64 {
+		(1..x+1).fold(1 as i64, |acc, x| acc * x)
+	}
 
-  // main
-  mod knihovna; // vloží soubor
-  use knihovna::faktorial;
+	// main
+	mod knihovna; // vloží soubor
+	use knihovna::faktorial;
 
-  fn main() {
-  	println!("{}", faktorial(10)); // 3628800
-  }
+	fn main() {
+		println!("{}", faktorial(10)); // 3628800
+	}
 .rs
 \*Následující bod vysvětluje něco jiného
