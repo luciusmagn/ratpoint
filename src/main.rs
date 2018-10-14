@@ -8,7 +8,7 @@ use easycurses::*;
 use easycurses::Color::*;
 
 trait Interpret {
-	fn interpret(&self, &mut EasyCurses);
+	fn interpret(&self, &mut EasyCurses, bool);
 	fn compile_rust(&self) -> String;
 }
 
@@ -84,6 +84,7 @@ impl Rust for str {
 			| "f64"
 			| "f128"
 			| "usize"
+			| "let"
 			| "isize" => true,
 			_ => false,
 		}
@@ -109,6 +110,7 @@ impl Rust for str {
 
 	fn is_yellow(&self) -> bool {
 		match self {
+			"Typ" => true,
 			x if x.starts_with("\"") && x.ends_with("\"") => true,
 			x if x.starts_with("'") && x.ends_with("'") => true,
 			x if x.starts_with("::") => true,
@@ -229,10 +231,10 @@ fn color(s: &str) -> String {
 }
 
 impl Interpret for String {
-	fn interpret(&self, window: &mut EasyCurses) {
+	fn interpret(&self, window: &mut EasyCurses, clear: bool) {
 		let mut chars = self.chars().peekable();
 		let mut indent = 0;
-		window.clear();
+		if clear { window.clear(); }
 		window.set_bold(false);
 		window.set_underline(false);
 		window.set_color_pair(colorpair!(White on Black));
@@ -272,9 +274,18 @@ impl Interpret for String {
 					Some('-') => {
 						match indent {
 							5 => window.print("\r  o  "),
-							10 => window.print("\r        •  "),
-							15 => window.print("\r             >  "),
+							10 => window.print("\r       •  "),
+							15 => window.print("\r            >  "),
 							_ => window.print(format!("\r{}  ‣  ", " ".repeat(indent - 5))),
+						};
+					},
+					Some('<') => {
+						if indent != 0 { indent -= 5; window.print("\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08"); };
+						match indent {
+							5 => window.print("  o  "),
+							10 => window.print("  •  "),
+							15 => window.print("  >  "),
+							_ => window.print("  ‣  "),
 						};
 					},
 					Some(x) => { window.print("\\"); window.print(x.to_string()); },
@@ -297,12 +308,12 @@ impl Interpret for String {
 					},
 				},
 				'.' => match (chars.next(), chars.peek()) {
-					(Some('H'), Some(&'E')) => {
+					(Some('H'), Some(&'D')) => {
 						chars.next();
 						let heading = chars.clone().take_while(|x| *x != '\n').collect::<String>();
 						(0..heading.len()).for_each(|_| { chars.next(); });
 
-						format!("\n  \\fB\\fU{}\\fR\n", heading.trim_left()).interpret(window);
+						format!("\n  \\fB\\fU{}\\fR\n", heading.trim_left()).interpret(window, false);
 					},
 					(Some(x), _) => { window.print(&format!(".{}", x)); },
 					(None, _)    => { window.print("."); },
@@ -337,8 +348,6 @@ impl Interpret for String {
 					temp.clear();
 					windows.next();
 					windows.next();
-
-					eprintln!("{:#?}", windows.peek());
 				}
 				x => { new_string.push(x[0]) },
 			}
@@ -364,18 +373,33 @@ fn main() {
 			\n.ll 6.3i\
 			\n.fo ``- % -``\
 
-			\n.de HE\
-			\n.(c\
-			\n.ps 18\
+			\n.de HD\
+			\n.(l L\
 			\n.ft B\
 			\n\\\\$1\
 			\n.ft\
-			\n.)c\
+			\n.)l\
 			\n.ps\
 			\n..\
 
 			\n.2c\
 		");
+
+		let mut odd = true;
+		files.iter()
+			.map(|x| x.replace(r".rs", if odd { odd = false; ".rs\n.(l L" } else { odd = true; ".)l\n.rs" }))
+			.map(|x| x.compile_rust())
+			.map(|x| x.replace(r"\cW", r"\fR"))
+			.map(|x| x.replace(r"\fU", r"\fI"))
+			.map(|x| x.replace(r"\*", ".bu\n"))
+			.map(|x| x.replace(r"\-", ".bu\n"))
+			.map(|x| x.replace(r"\cr", r"\fB"))
+			.map(|x| x.replace(r"\cg", r"\fB"))
+			.map(|x| x.replace(r"\cm", r"\fB"))
+			.map(|x| x.replace(r"\cc", r"\fB"))
+			.map(|x| x.replace(r"\cy", r"\fB"))
+			.map(|x| x.replace(r"\cB", r"\fI"))
+			.for_each(|x| println!("{}", x));
 
 		return;
 	}
@@ -392,7 +416,7 @@ fn main() {
 		window.clear();
 		window.refresh();
 
-		files[i].compile_rust().interpret(&mut window);
+		files[i].compile_rust().interpret(&mut window, true);
 		while let Some(input) = window.get_input() {
 			use Input::*;
 
@@ -400,9 +424,9 @@ fn main() {
 				// exiting
 				Unknown(27) | Character('q') | KeyF5 => return,
 				// first
-				Character('u') | KeyBeg | KeyHome => files[{i = 0; i}].compile_rust().interpret(&mut window),
+				Character('u') | KeyBeg | KeyHome => files[{i = 0; i}].compile_rust().interpret(&mut window, true),
 				// last
-				Character('i') | KeyEnd => files[{i = files.len() - 1; i}].compile_rust().interpret(&mut window),
+				Character('i') | KeyEnd => files[{i = files.len() - 1; i}].compile_rust().interpret(&mut window, true),
 				// next
 				Character('j')
 				| Character('l')
@@ -410,7 +434,7 @@ fn main() {
 				| Character('C')
 				| KeyRight
 				| KeyDown
-				| KeyNPage => files[if i < files.len() - 1 { i += 1; i } else { i }].compile_rust().interpret(&mut window),
+				| KeyNPage => files[if i < files.len() - 1 { i += 1; i } else { i }].compile_rust().interpret(&mut window, true),
 				// previous
 				Character('h')
 				| Character('k')
@@ -418,7 +442,7 @@ fn main() {
 				| Character('D')
 				| KeyLeft
 				| KeyUp
-				| KeyPPage => files[if i != 0 { i -= 1; i } else { i }].compile_rust().interpret(&mut window),
+				| KeyPPage => files[if i != 0 { i -= 1; i } else { i }].compile_rust().interpret(&mut window, true),
 				_ => (),
 			}
 		}
