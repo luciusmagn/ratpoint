@@ -1,11 +1,10 @@
-
-  \fB\fUModuly\fR
+.HD Moduly
 
 \*Modul je oddělená jednotka programu,
 podobně jako soubor v C/C++ nebo namespace v C#
- \*podbod
- \-spolubod
-  \* víc podbod
+\*podbod
+\-spolubod
+\*víc podbod
 
 \*Slouží k členění kódu, jak logicky, tak do souborů
 

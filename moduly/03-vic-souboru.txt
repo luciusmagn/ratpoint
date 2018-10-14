@@ -1,4 +1,4 @@
-.HE Moduly ve více souborech
+.HD Moduly ve více souborech
 \*Soubor je automaticky modulem o jeho názvu,
 nepoužívá se klíčové slovo\fR
 

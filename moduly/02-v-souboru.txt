@@ -1,27 +1,24 @@
-
-  \fB\fUModuly v jednom souboru\fR
+.HD Moduly v jednom souboru
 
 \*Když chceme definovat modul uvnitř souboru,
 následuje za klíčovým slovem \fUmod\fR\fB blok kódu\fR
 
 .rs
-  mod potato {
-  	fn moje_funkce() {
-  		println!("hello!");
-  	}
-  	pub fn taky_funkce() {
-  		println!("????????");
-  	}
-  }
-
-  fn bezimportu() {
-  	potato::moje_funkce(); // není public, chyba
-  	potato::taky_funkce(); // ????????
-  }
-
-  fn simportem() {
-  	use potato::taky_funkce;
-  	taky_funkce(); // ????????
-  }
+mod potato {
+	fn moje_funkce() {
+		println!("hello!");
+	}
+	pub fn taky_funkce() {
+		println!("????????");
+	}
+}
+fn bezimportu() {
+	potato::moje_funkce(); // není public, chyba
+	potato::taky_funkce(); // ????????
+}
+fn simportem() {
+	use potato::taky_funkce;
+	taky_funkce(); // ????????
+}
 
 .rs

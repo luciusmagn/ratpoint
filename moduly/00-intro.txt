@@ -1,24 +1,3 @@
-
-
-
-
-
-
-
-
-
-                                  \fB================
-                                   Moduly v Rustu
-                                  ================\fR
-
-
-
-
-
-
-
-
-
-
+.HD "Moduly v Rustu"
 
 \fILukáš Hozda\fR
