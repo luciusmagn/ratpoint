@@ -1,0 +1,19 @@
+.HD Čtení vstupu
+ 
+\*Knihovna \fBrstd\fR nabízí čtyři funkce:
+
+\*\fBread()\fR - čte vstup a opakuje se, dokud nedostane správný vstup
+
+\*\fBread_or(vychozi)\fR - jako \fBread()\fR, ale vrací výchozí hodnotu při prázdném vstupu
+
+\*\fBprompt(\cy"moje zpráva"\cW)\fR - jako \fBread()\fR
+
+\*\fBprompt_default(\cy"moje zpráva"\cW, vychozi)\fR - jako \fBread_or(...)\fR
+
+.rs
+	fn main() {
+		let jmeno: String = prompt("zadejte svoje jméno");
+		println!("vaše jméno je {}", jmeno);
+	}
+.rs
+\*Tyto funkce automaticky konvertují vstup na správný typ
